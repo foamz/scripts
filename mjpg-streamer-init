@@ -1,0 +1,71 @@
+#!/bin/bash
+# Handle mjpeg-streamer for Raspberry Pi
+# I guess this script can  be used on start up. My aim was to plonk it on cron, to switch between day and night modes.
+# Why am I not daemonizing this? Well, it just doesn't work for me. You can try and run it with -b and then take out all the screen stuff.
+#
+# Props goes to jacksonliam on git: https://github.com/jacksonliam/mjpg-streamer
+# For modifying mjpg-streamer to work on RPiA
+# 
+# No copyright on this. Do what you please with it.
+
+# Configure the 4 lines below
+MSTREAMERDIR="/opt/mjpg-streamer-experimental"
+WIDTH=1280
+HEIGHT=720
+FPS=25
+
+# Try not to change anything further below
+
+stopcam () {
+	# stop things
+	CAMPID=`screen -ls |grep camz |awk '{print $1}'`
+        if [ -n "${CAMPID}" ]; then
+            kill `screen -ls |grep camz |awk '{print $1}' |sed 's/.camz//'`
+        fi
+            # can't kill something thats not running...
+}
+
+day () { 
+        # start in day mode
+        screen -S camz -d -m ${MSTREAMERDIR}/mjpg_streamer -o "${MSTREAMERDIR}/output_http.so -w ./www" -i "${MSTREAMERDIR}/input_raspicam.so -x ${WIDTH} -y ${HEIGHT} -fps ${FPS} -ex day"
+}
+
+night () { 
+        # start in night mode
+        screen -S camz -d -m ${MSTREAMERDIR}/mjpg_streamer -o "${MSTREAMERDIR}/output_http.so -w ./www" -i "${MSTREAMERDIR}/input_raspicam.so -x ${WIDTH} -y ${HEIGHT} -fps ${FPS} -ex night"
+}
+
+status () {
+	# attempt to get the status
+	CAMPID=`screen -ls |grep camz |awk '{print $1}'`
+	if [ -n "${CAMPID}" ]; then
+	    echo "mjpg-streamer is running!"
+	else
+	    echo "mjpg-streamer is NOT running!"
+	fi
+}
+
+
+case "$1" in
+  stop)
+	stopcam
+	;;
+  day)
+	# stopcam regardless if its running or not
+	stopcam
+	sleep 1
+	day
+	;;
+  night)
+	# stopcam regardless if its running or not
+	stopcam
+	sleep 1
+	night
+	;;
+  *)
+	status
+	echo "Usage: mjpg-init [stop|day|night]" >&2
+	exit 3
+	;;
+esac
+
