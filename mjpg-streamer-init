@@ -4,7 +4,7 @@
 # Why am I not daemonizing this? Well, it just doesn't work for me. You can try and run it with -b and then take out all the screen stuff.
 #
 # Props goes to jacksonliam on git: https://github.com/jacksonliam/mjpg-streamer
-# For modifying mjpg-streamer to work on RPiA
+# For modifying mjpg-streamer to work on RPi
 # 
 # No copyright on this. Do what you please with it.
 
